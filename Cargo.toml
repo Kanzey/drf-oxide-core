@@ -1,0 +1,25 @@
+[package]
+name = "fast-drf-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+description = "Rust core for fast-drf: compiled Django REST framework serializers"
+license = "MIT"
+
+[lib]
+name = "_fast_drf_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.28", features = ["num-bigint"] }
+jiter = { version = "0.13", features = ["python"] }
+itoa = "1"
+
+[features]
+default = ["extension-module"]
+extension-module = ["pyo3/extension-module"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3
