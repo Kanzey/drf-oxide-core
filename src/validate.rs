@@ -135,6 +135,25 @@ impl Val {
         matches!(self, Val::Python)
     }
 
+    /// `CharField.run_validation` returns `''` for blank input before `run_validators()`, so the
+    /// field's validators must not run for it.
+    pub fn skips_validators(&self, data: &Bound<'_, PyAny>) -> bool {
+        let Val::Char {
+            trim_whitespace, ..
+        } = self
+        else {
+            return false;
+        };
+        let Some(text) = data
+            .cast_exact::<PyString>()
+            .ok()
+            .and_then(|s| s.to_str().ok())
+        else {
+            return false;
+        };
+        text.is_empty() || (*trim_whitespace && py_strip(text).is_empty())
+    }
+
     pub fn kind(&self) -> String {
         match self {
             Val::Char { .. } => "char".into(),

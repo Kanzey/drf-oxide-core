@@ -269,7 +269,11 @@ fn native_value<'py>(
         // validate_empty_values: `(True, None)`, except for nullable `source='*'` fields.
         return Ok((wf.allow_null && !wf.source_attrs.is_empty()).then(|| (raw.clone(), false)));
     }
-    Ok(wf.val.validate(raw, current_tz)?.map(|value| (value, true)))
+    let run_validators = !wf.val.skips_validators(raw);
+    Ok(wf
+        .val
+        .validate(raw, current_tz)?
+        .map(|value| (value, run_validators)))
 }
 
 fn run_field<'py>(
