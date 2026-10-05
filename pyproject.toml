@@ -3,22 +3,40 @@ requires = ["maturin>=1.8,<2"]
 build-backend = "maturin"
 
 [project]
-name = "fast-drf-core"
-description = "Rust core for fast-drf: compiled Django REST framework serializers"
+name = "drf-oxide-core"
+description = "Rust core for drf-oxide: compiled Django REST framework serializers"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Kamil Kobza", email = "kamil1pl@gmail.com" }]
+keywords = ["django", "django-rest-framework", "drf", "serializers", "rust", "performance"]
 dynamic = ["version"]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
     "Programming Language :: Rust",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
+    "Typing :: Typed",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Kanzey/drf-oxide-core"
+Repository = "https://github.com/Kanzey/drf-oxide-core"
+Issues = "https://github.com/Kanzey/drf-oxide-core/issues"
 
 [dependency-groups]
 dev = ["pytest>=8", "maturin>=1.8,<2"]
 
 [tool.maturin]
 python-source = "python"
-module-name = "fast_drf_core._fast_drf_core"
+module-name = "drf_oxide_core._drf_oxide_core"
 features = ["pyo3/extension-module"]
 
 [tool.pytest.ini_options]

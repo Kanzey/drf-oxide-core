@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 import pytest
 
-from fast_drf_core import JsonFallback, from_json, to_json
+from drf_oxide_core import JsonFallback, from_json, to_json
 
 
 def drf_like_default(obj):

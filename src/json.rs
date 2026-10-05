@@ -13,7 +13,7 @@ use crate::format::{date_iso, datetime_iso, utcoffset, uuid_str};
 use crate::tools::{decimal_type, is_exact, uuid_type};
 
 create_exception!(
-    _fast_drf_core,
+    _drf_oxide_core,
     JsonFallback,
     pyo3::exceptions::PyException,
     "The native encoder cannot reproduce json.dumps() for this input; use the Python encoder."

@@ -10,7 +10,7 @@ mod tools;
 mod validate;
 
 #[pymodule]
-fn _fast_drf_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _drf_oxide_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add("STATUS_OK", config::STATUS_OK)?;
     m.add("STATUS_SKIP", config::STATUS_SKIP)?;

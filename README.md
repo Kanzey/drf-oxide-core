@@ -1,7 +1,11 @@
-# fast-drf-core
+# drf-oxide-core
 
-Rust core (PyO3 + maturin) of [`fast-drf`](../fast-drf). It knows nothing about Django; `fast_drf`
-passes the DRF / Django objects it needs once through `configure()` and then builds a
+Rust core (PyO3 + maturin) of [`drf-oxide`](https://pypi.org/project/drf-oxide/), a drop-in,
+Rust-accelerated Django REST framework. Install `drf-oxide`; this package is its dependency and is
+not meant to be used on its own.
+
+It knows nothing about Django; `drf_oxide` passes the DRF / Django objects it needs once through
+`configure()` and then builds a
 `CompiledSerializer` per serializer instance from a plain-dict schema.
 
 - `CompiledSerializer(read_fields, write_fields)`

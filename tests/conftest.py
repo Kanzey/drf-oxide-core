@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-import fast_drf_core
+import drf_oxide_core
 
 
 class Empty:
@@ -39,11 +39,11 @@ def run_field(field, data, validate_method):
 def finish_field(field, value, validate_method, run_validators):
     if validate_method is not None:
         value = validate_method(value)
-    return fast_drf_core.STATUS_OK, value
+    return drf_oxide_core.STATUS_OK, value
 
 
-if not fast_drf_core.is_configured():
-    fast_drf_core.configure(
+if not drf_oxide_core.is_configured():
+    drf_oxide_core.configure(
         empty=Empty,
         skip_field=SkipField,
         object_does_not_exist=ObjectDoesNotExist,

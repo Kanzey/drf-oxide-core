@@ -1,13 +1,15 @@
 [package]
-name = "fast-drf-core"
+name = "drf-oxide-core"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.83"
-description = "Rust core for fast-drf: compiled Django REST framework serializers"
+description = "Rust core for drf-oxide: compiled Django REST framework serializers"
+authors = ["Kamil Kobza <kamil1pl@gmail.com>"]
+repository = "https://github.com/Kanzey/drf-oxide-core"
 license = "MIT"
 
 [lib]
-name = "_fast_drf_core"
+name = "_drf_oxide_core"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

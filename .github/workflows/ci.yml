@@ -1,0 +1,206 @@
+# Tests, builds wheels for every platform and publishes them to PyPI on a `v*` tag
+# (from the `pypi` environment).
+# Publishing uses PyPI trusted publishing, no API tokens.
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # CPython versions to build wheels for; PyPy and free-threaded builds are not supported.
+  INTERPRETERS: python3.10 python3.11 python3.12 python3.13
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Rust checks
+        shell: bash
+        run: |
+          set -e
+          export PYO3_PYTHON=$(which python)
+          export LD_LIBRARY_PATH=$(python -c 'import sysconfig; print(sysconfig.get_config_var("LIBDIR"))')
+          cargo fmt --check
+          cargo clippy --no-default-features -- -D warnings
+          cargo test --no-default-features
+
+  linux:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04-arm
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i ${{ env.INTERPRETERS }}
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: auto
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-linux-${{ matrix.platform.target }}
+          path: dist
+      - uses: astral-sh/setup-uv@v7
+      - name: pytest on every Python version
+        shell: bash
+        run: |
+          set -e
+          for version in 3.10 3.11 3.12 3.13; do
+            uv venv --clear -p "$version" .venv
+            uv pip install --python .venv drf-oxide-core --no-index --find-links dist --reinstall
+            uv pip install --python .venv pytest
+            .venv/bin/python -m pytest
+          done
+
+  musllinux:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04-arm
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i ${{ env.INTERPRETERS }}
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: musllinux_1_2
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-musllinux-${{ matrix.platform.target }}
+          path: dist
+      - name: pytest
+        if: matrix.platform.target == 'x86_64'
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/io -w /io alpine:latest sh -c '
+            set -e
+            apk add py3-pip py3-virtualenv
+            python3 -m virtualenv .venv
+            . .venv/bin/activate
+            pip install drf-oxide-core --no-index --find-links dist --force-reinstall
+            pip install pytest
+            pytest
+          '
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+            3.13
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist -i ${{ env.INTERPRETERS }}
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-windows-x64
+          path: dist
+      - uses: astral-sh/setup-uv@v7
+      - name: pytest
+        shell: bash
+        run: |
+          set -e
+          uv venv -p 3.13 .venv
+          uv pip install --python .venv drf-oxide-core --no-index --find-links dist --reinstall
+          uv pip install --python .venv pytest
+          .venv/Scripts/python -m pytest
+
+  macos:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: macos-15-intel
+            target: x86_64
+          - runner: macos-latest
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+            3.13
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i ${{ env.INTERPRETERS }}
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-macos-${{ matrix.platform.target }}
+          path: dist
+      - uses: astral-sh/setup-uv@v7
+      - name: pytest
+        run: |
+          set -e
+          uv venv -p 3.13 .venv
+          uv pip install --python .venv drf-oxide-core --no-index --find-links dist --reinstall
+          uv pip install --python .venv pytest
+          .venv/bin/python -m pytest
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-sdist
+          path: dist
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [lint, linux, musllinux, windows, macos, sdist]
+    runs-on: ubuntu-latest
+    # Add a required reviewer to this environment to approve each release.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/drf-oxide-core/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1

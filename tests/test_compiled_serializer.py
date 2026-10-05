@@ -5,7 +5,7 @@ import types
 import pytest
 from conftest import Manager, SkipField
 
-from fast_drf_core import STATUS_ERROR, STATUS_OK, CompiledSerializer
+from drf_oxide_core import STATUS_ERROR, STATUS_OK, CompiledSerializer
 
 
 class FakeField:

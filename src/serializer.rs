@@ -31,7 +31,7 @@ struct WriteField {
 ///
 /// It holds the live field objects of one serializer instance (fields know their `parent`,
 /// `context` and `root`), so it must be built per serializer instance, not per class.
-#[pyclass(frozen, module = "fast_drf_core._fast_drf_core")]
+#[pyclass(frozen, module = "drf_oxide_core._drf_oxide_core")]
 pub struct CompiledSerializer {
     read: Vec<ReadField>,
     write: Vec<WriteField>,

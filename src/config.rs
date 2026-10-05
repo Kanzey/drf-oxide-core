@@ -4,7 +4,7 @@ use pyo3::sync::PyOnceLock;
 use pyo3::types::{PyDict, PyType};
 
 /// Objects from Django / DRF that the core needs but must not import itself.
-/// `fast_drf` passes them once, at import time, through `configure()`.
+/// `drf_oxide` passes them once, at import time, through `configure()`.
 pub struct Config {
     pub empty: Py<PyAny>,
     pub skip_field: Py<PyType>,
@@ -32,7 +32,7 @@ static CONFIG: PyOnceLock<Config> = PyOnceLock::new();
 pub fn config(py: Python<'_>) -> PyResult<&'static Config> {
     CONFIG
         .get(py)
-        .ok_or_else(|| PyRuntimeError::new_err("fast_drf_core.configure() has not been called"))
+        .ok_or_else(|| PyRuntimeError::new_err("drf_oxide_core.configure() has not been called"))
 }
 
 impl Config {
@@ -78,7 +78,7 @@ pub fn configure(
     };
     CONFIG
         .set(py, cfg)
-        .map_err(|_| PyRuntimeError::new_err("fast_drf_core is already configured"))
+        .map_err(|_| PyRuntimeError::new_err("drf_oxide_core is already configured"))
 }
 
 #[pyfunction]

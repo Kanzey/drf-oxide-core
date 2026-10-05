@@ -1,4 +1,4 @@
-from ._fast_drf_core import (
+from ._drf_oxide_core import (
     STATUS_ERROR,
     STATUS_OK,
     STATUS_SKIP,
