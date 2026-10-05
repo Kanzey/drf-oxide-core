@@ -15,7 +15,7 @@ permissions:
 
 env:
   # CPython versions to build wheels for; PyPy and free-threaded builds are not supported.
-  INTERPRETERS: python3.10 python3.11 python3.12 python3.13
+  INTERPRETERS: python3.10 python3.11 python3.12 python3.13 python3.14
 
 jobs:
   lint:
@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          for version in 3.10 3.11 3.12 3.13; do
+          for version in 3.10 3.11 3.12 3.13 3.14; do
             uv venv --clear -p "$version" .venv
             uv pip install --python .venv drf-oxide-core --no-index --find-links dist --reinstall
             uv pip install --python .venv pytest
@@ -94,10 +94,10 @@ jobs:
       - name: pytest
         if: matrix.platform.target == 'x86_64'
         run: |
-          docker run --rm -v ${{ github.workspace }}:/io -w /io alpine:latest sh -c '
+          # Pinned to a Python version we build wheels for (alpine:latest moves to newer ones).
+          docker run --rm -v ${{ github.workspace }}:/io -w /io python:3.13-alpine sh -c '
             set -e
-            apk add py3-pip py3-virtualenv
-            python3 -m virtualenv .venv
+            python -m venv .venv
             . .venv/bin/activate
             pip install drf-oxide-core --no-index --find-links dist --force-reinstall
             pip install pytest
@@ -115,6 +115,7 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -153,6 +154,7 @@ jobs:
             3.11
             3.12
             3.13
+            3.14
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
